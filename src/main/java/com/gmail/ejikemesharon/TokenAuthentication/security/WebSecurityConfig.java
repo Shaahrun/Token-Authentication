@@ -1,6 +1,7 @@
 package com.gmail.ejikemesharon.TokenAuthentication.security;
 
 
+import com.gmail.ejikemesharon.TokenAuthentication.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,26 +26,25 @@ public class WebSecurityConfig {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private UserService userService;
 
-    public WebSecurityConfig(BCryptPasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+    public WebSecurityConfig(BCryptPasswordEncoder passwordEncoder, UserService userService) {
         this.passwordEncoder = passwordEncoder;
-        this.userDetailsService = userDetailsService;
+        this.userService = userService;
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
+         httpSecurity.cors().and().csrf().disable().authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()
+                .anyRequest().authenticated())
+                .addFilter(new JWTAuthenticationFilter(authenticationManagerBean()))
+                //.addFilter(new JWTAuthorizationFilter(authenticationManagerBean()))
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         httpSecurity.authenticationProvider(authenticationProvider());
 
-        return httpSecurity.cors().and().csrf().disable().authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()
-                .anyRequest().authenticated()
-        )
-                        .addFilter(new JWTAuthenticationFilter(authenticationManagerBean()))
-                        .addFilter(new JWTAuthorizationFilter(authenticationManagerBean()))
-                        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                        .build();
-
+        return httpSecurity.build();
 
 //        httpSecurity.cors().and().csrf().disable().authorizeRequests()
 //                .anyRequest()
@@ -70,7 +70,7 @@ public class WebSecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(userService);
         provider.setPasswordEncoder(passwordEncoder);
 
         return provider;
