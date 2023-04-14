@@ -37,31 +37,15 @@ public class WebSecurityConfig {
          httpSecurity.cors().and().csrf().disable().authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()
                 .anyRequest().authenticated())
-                //.addFilter(new JWTAuthenticationFilter(authenticationManagerBean()))
-                //.addFilter(new JWTAuthorizationFilter(authenticationManagerBean()))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         httpSecurity.authenticationProvider(authenticationProvider());
 
         return httpSecurity.build();
-
-//        httpSecurity.cors().and().csrf().disable().authorizeRequests()
-//                .anyRequest()
-//                .authenticated()
-//                .and()
-//                .addFilter(new JWTAuthenticationFilter(authenticationManagerBean()))
-//                .addFilter(new JWTAuthorizationFilter(authenticationManagerBean()))
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-
-
-        //return httpSecurity.build();
     }
 
     @Bean
     public AuthenticationManager authenticationManagerBean(/*HttpSecurity httpSecurity*/) throws Exception {
-        //AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
-       // authenticationManagerBuilder.inMemoryAuthentication().withUser("user").password("password").roles("ADMIN");
         return new ProviderManager(authenticationProvider());
     }
 
